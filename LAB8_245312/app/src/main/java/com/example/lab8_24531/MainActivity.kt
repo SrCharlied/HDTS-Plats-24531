@@ -14,8 +14,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.lab8_24531.ui.theme.LAB8_24531Theme
 import com.example.lab8_24531.login.LoginScreen
-import com.example.lab8_24531.characterlist.CharacterListScreen
-import com.example.lab8_24531.characterdetail.CharacterDetailScreen
+import com.example.lab8_24531.characterlist.ListaPJs
+import com.example.lab8_24531.characterdetail.PantallaPJ
 import com.example.lab8_24531.data.CharacterDb
 import kotlinx.serialization.Serializable
 
@@ -66,7 +66,7 @@ fun AppNavigation(characterDb: CharacterDb) {
                 (context as? Activity)?.finish()
             }
 
-            CharacterListScreen(
+            ListaPJs(
                 characters = characterDb.getAllCharacters(),
                 onCharacterClick = { characterId ->
                     navController.navigate(CharacterDetailDestination(characterId))
@@ -78,7 +78,7 @@ fun AppNavigation(characterDb: CharacterDb) {
             val destination = backStackEntry.toRoute<CharacterDetailDestination>()
             val character = characterDb.getCharacterById(destination.characterId)
 
-            CharacterDetailScreen(
+            PantallaPJ(
                 character = character,
                 onBackPressed = {
                     navController.popBackStack()
