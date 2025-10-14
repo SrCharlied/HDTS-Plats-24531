@@ -4,33 +4,41 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.lab8_24531.R
+import com.example.lab8_24531.data.UserPreferences
+import kotlinx.coroutines.launch
 
 @Composable
 fun PantPerfil(onLogout: () -> Unit) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val userPrefs = remember { UserPreferences(context) }
+    val userName by userPrefs.userName.collectAsState(initial = "")
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.mi_avatar), 
-            contentDescription = "Profile picture",
-            modifier = Modifier.size(120.dp)
-        )
-
-        Spacer(Modifier.height(16.dp))
-        Text("Carlos López", style = MaterialTheme.typography.headlineSmall)
-        Text("Carné: 24531", style = MaterialTheme.typography.bodyMedium)
-
-        Spacer(Modifier.height(24.dp))
-        Button(onClick = onLogout) {
+        Text("Bienvenido, $userName", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(32.dp))
+        Button(onClick = {
+            scope.launch {
+                userPrefs.clearUserName()
+                onLogout()
+            }
+        }) {
             Text("Cerrar sesión")
         }
     }
