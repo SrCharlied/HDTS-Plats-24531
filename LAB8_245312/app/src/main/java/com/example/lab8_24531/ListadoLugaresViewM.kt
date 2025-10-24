@@ -1,19 +1,19 @@
 package com.example.lab8_24531.locations
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.lab8_24531.Location
-import com.example.lab8_24531.LocationDb
+import com.example.lab8_24531.data.local.LocationEntity
+import com.example.lab8_24531.data.repository.LocationRepository
 import com.example.lab8_24531.viewmodel.UiState
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ListadoLugaresViewM : ViewModel() {
-    private val db = LocationDb()
-    private val _state = MutableStateFlow(UiState<List<Location>>())
+class ListadoLugaresViewM(application: Application) : AndroidViewModel(application) {
+    private val repository = LocationRepository(application)
+
+    private val _state = MutableStateFlow(UiState<List<LocationEntity>>())
     val state = _state.asStateFlow()
 
     init {
@@ -23,16 +23,14 @@ class ListadoLugaresViewM : ViewModel() {
     fun loadLocations() {
         viewModelScope.launch {
             _state.value = UiState(isLoading = true)
-            delay(4000L)
-            _state.value = UiState(isLoading = false, data = db.getAllLocations())
+            try {
+                val locations = repository.getAllLocations()
+                _state.value = UiState(isLoading = false, data = locations)
+            } catch (e: Exception) {
+                _state.value = UiState(isLoading = false, hasError = true)
+            }
         }
     }
 
-    fun showError() {
-        _state.update { it.copy(isLoading = false, hasError = true) }
-    }
-
-    fun retry() {
-        loadLocations()
-    }
+    fun retry() = loadLocations()
 }

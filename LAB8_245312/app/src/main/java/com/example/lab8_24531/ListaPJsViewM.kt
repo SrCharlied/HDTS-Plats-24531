@@ -1,19 +1,19 @@
 package com.example.lab8_24531.characterlist
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.lab8_24531.data.Character
-import com.example.lab8_24531.data.CharacterDb
+import com.example.lab8_24531.data.local.CharacterEntity
+import com.example.lab8_24531.data.repository.CharacterRepository
 import com.example.lab8_24531.viewmodel.UiState
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ListaPJsViewM : ViewModel() {
-    private val db = CharacterDb()
-    private val _state = MutableStateFlow(UiState<List<Character>>())
+class ListaPJsViewM(application: Application) : AndroidViewModel(application) {
+
+    private val repo = CharacterRepository(application)
+    private val _state = MutableStateFlow(UiState<List<CharacterEntity>>())
     val state = _state.asStateFlow()
 
     init {
@@ -22,17 +22,16 @@ class ListaPJsViewM : ViewModel() {
 
     fun loadCharacters() {
         viewModelScope.launch {
-            _state.value = UiState(isLoading = true)
-            delay(4000L)
-            _state.value = UiState(isLoading = false, data = db.getAllCharacters())
+            try {
+                _state.value = UiState(isLoading = true)
+                val characters = repo.getCharacters()
+                _state.value = UiState(isLoading = false, data = characters)
+            } catch (e: Exception) {
+                _state.value = UiState(isLoading = false, hasError = true)
+            }
         }
     }
 
-    fun showError() {
-        _state.update { it.copy(isLoading = false, hasError = true) }
-    }
-
-    fun retry() {
-        loadCharacters()
-    }
+    fun retry() = loadCharacters()
 }
+
